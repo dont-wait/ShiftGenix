@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Vị trí - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-building"></i> Quản lý Vị trí Công việc
+        </h2>
+        <p class="text-muted">Cấu hình các phòng khám, khoa, bộ phận và yêu cầu nhân lực</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPositionModal">
+            <i class="bi bi-plus-circle"></i> Thêm vị trí mới
+        </button>
+    </div>
+</div>
+
+<!-- Positions Grid -->
+<div class="row g-4" id="positionsGrid">
+    <!-- Sample Position Card -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-hospital"></i> Phòng khám Nội khoa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Chuyên khoa:</strong>
+                    <span class="badge bg-info">Nội khoa</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Yêu cầu nhân lực:</strong>
+                    <ul class="list-unstyled ms-3">
+                        <li><i class="bi bi-person-badge"></i> Bác sĩ: <strong>1</strong></li>
+                        <li><i class="bi bi-person"></i> Điều dưỡng: <strong>1</strong></li>
+                    </ul>
+                </div>
+                <div class="mb-2">
+                    <strong>Nhu cầu bệnh nhân:</strong>
+                    <ul class="list-unstyled ms-3 small">
+                        <li>05:00-10:00: <span class="badge bg-danger">100 BN</span></li>
+                        <li>10:00-14:00: <span class="badge bg-warning text-dark">50 BN</span></li>
+                        <li>14:00-23:00: <span class="badge bg-success">20 BN</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-sm btn-warning" onclick="editPosition('PK_NOI_001')">
+                    <i class="bi bi-pencil"></i> Sửa
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deletePosition('PK_NOI_001')">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-hospital"></i> Phòng khám Ngoại khoa
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Chuyên khoa:</strong>
+                    <span class="badge bg-info">Ngoại khoa</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Yêu cầu nhân lực:</strong>
+                    <ul class="list-unstyled ms-3">
+                        <li><i class="bi bi-person-badge"></i> Bác sĩ: <strong>1</strong></li>
+                        <li><i class="bi bi-person"></i> Điều dưỡng: <strong>2</strong></li>
+                    </ul>
+                </div>
+                <div class="mb-2">
+                    <strong>Nhu cầu bệnh nhân:</strong>
+                    <ul class="list-unstyled ms-3 small">
+                        <li>05:00-10:00: <span class="badge bg-danger">80 BN</span></li>
+                        <li>10:00-14:00: <span class="badge bg-warning text-dark">40 BN</span></li>
+                        <li>14:00-23:00: <span class="badge bg-success">15 BN</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-sm btn-warning" onclick="editPosition('PK_NGOAI_001')">
+                    <i class="bi bi-pencil"></i> Sửa
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deletePosition('PK_NGOAI_001')">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Position Modal -->
+<div class="modal fade" id="addPositionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle"></i> Thêm vị trí công việc mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPositionForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mã vị trí *</label>
+                            <input type="text" class="form-control" name="id" required 
+                                   placeholder="VD: PK_NOI_001">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tên vị trí *</label>
+                            <input type="text" class="form-control" name="name" required
+                                   placeholder="VD: Phòng khám Nội khoa">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Chuyên khoa yêu cầu *</label>
+                        <select class="form-select" name="specialty_required" required>
+                            <option value="">Chọn chuyên khoa</option>
+                            <option value="Nội khoa">Nội khoa</option>
+                            <option value="Ngoại khoa">Ngoại khoa</option>
+                            <option value="Sản khoa">Sản khoa</option>
+                            <option value="Nhi khoa">Nhi khoa</option>
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Số bác sĩ tối thiểu *</label>
+                            <input type="number" class="form-control" name="required_doctors" 
+                                   value="1" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Số điều dưỡng tối thiểu *</label>
+                            <input type="number" class="form-control" name="required_nurses" 
+                                   value="1" min="1" required>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6>Nhu cầu bệnh nhân theo khung giờ</h6>
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <label class="form-label">05:00 - 10:00 (Giờ cao điểm)</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" name="demand_peak" 
+                                   value="100" min="0">
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <label class="form-label">10:00 - 14:00</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" name="demand_midday" 
+                                   value="50" min="0">
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <label class="form-label">14:00 - 23:00</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" name="demand_evening" 
+                                   value="20" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="savePosition()">
+                    <i class="bi bi-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let positionsData = [];
+
+function loadPositions() {
+    const stored = localStorage.getItem('positionsData');
+    if (stored) {
+        positionsData = JSON.parse(stored);
+        renderPositionsGrid();
+    }
+}
+
+function savePosition() {
+    const form = document.getElementById('addPositionForm');
+    const formData = new FormData(form);
+    
+    const position = {
+        id: formData.get('id'),
+        name: formData.get('name'),
+        specialty_required: formData.get('specialty_required'),
+        required_doctors: parseInt(formData.get('required_doctors')),
+        required_nurses: parseInt(formData.get('required_nurses')),
+        demand: {
+            peak: parseInt(formData.get('demand_peak')),
+            midday: parseInt(formData.get('demand_midday')),
+            evening: parseInt(formData.get('demand_evening'))
+        }
+    };
+    
+    positionsData.push(position);
+    localStorage.setItem('positionsData', JSON.stringify(positionsData));
+    
+    bootstrap.Modal.getInstance(document.getElementById('addPositionModal')).hide();
+    form.reset();
+    renderPositionsGrid();
+    
+    alert('Đã thêm vị trí thành công!');
+}
+
+function renderPositionsGrid() {
+    const grid = document.getElementById('positionsGrid');
+    grid.innerHTML = positionsData.map(pos => `
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-hospital"></i> ${pos.name}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Chuyên khoa:</strong>
+                        <span class="badge bg-info">${pos.specialty_required}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Yêu cầu nhân lực:</strong>
+                        <ul class="list-unstyled ms-3">
+                            <li><i class="bi bi-person-badge"></i> Bác sĩ: <strong>${pos.required_doctors}</strong></li>
+                            <li><i class="bi bi-person"></i> Điều dưỡng: <strong>${pos.required_nurses}</strong></li>
+                        </ul>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Nhu cầu bệnh nhân:</strong>
+                        <ul class="list-unstyled ms-3 small">
+                            <li>05:00-10:00: <span class="badge bg-danger">${pos.demand.peak} BN</span></li>
+                            <li>10:00-14:00: <span class="badge bg-warning text-dark">${pos.demand.midday} BN</span></li>
+                            <li>14:00-23:00: <span class="badge bg-success">${pos.demand.evening} BN</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-warning" onclick="editPosition('${pos.id}')">
+                        <i class="bi bi-pencil"></i> Sửa
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePosition('${pos.id}')">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function deletePosition(id) {
+    if (confirm('Bạn có chắc muốn xóa vị trí này?')) {
+        positionsData = positionsData.filter(p => p.id !== id);
+        localStorage.setItem('positionsData', JSON.stringify(positionsData));
+        renderPositionsGrid();
+    }
+}
+
+function editPosition(id) {
+    alert('Chức năng sửa đang được phát triển');
+}

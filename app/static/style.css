@@ -1,0 +1,265 @@
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+}
+
+/* Cards */
+.card {
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Tables */
+.table {
+    background-color: white;
+}
+
+.table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    cursor: pointer;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Progress Bar */
+.progress {
+    height: 25px;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Modal */
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color), #0a58ca);
+    color: white;
+}
+
+.modal-footer {
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Jumbotron */
+.jumbotron {
+    border-left: 5px solid var(--primary-color);
+}
+
+/* Alert */
+.alert {
+    border-left: 4px solid;
+}
+
+.alert-success {
+    border-left-color: var(--success-color);
+}
+
+.alert-info {
+    border-left-color: var(--info-color);
+}
+
+.alert-warning {
+    border-left-color: var(--warning-color);
+}
+
+.alert-danger {
+    border-left-color: var(--danger-color);
+}
+
+/* Schedule View Specific */
+.view-container {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Shift Cell in Calendar */
+.shift-cell {
+    min-height: 100px;
+    padding: 10px;
+}
+
+.shift-cell strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
+/* Employee Card */
+.employee-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Loading State */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .btn,
+    footer,
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+    
+    @page {
+        margin: 2cm;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
+}
+
+/* Utilities */
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-hover:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.border-gradient {
+    border-image: linear-gradient(135deg, var(--primary-color), var(--success-color)) 1;
+}

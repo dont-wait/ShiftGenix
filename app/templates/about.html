@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Giới thiệu - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-info-circle"></i> Giới thiệu ShiftGenix
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="text-primary">
+                    <i class="bi bi-lightbulb"></i> Giới thiệu hệ thống
+                </h4>
+                <p class="lead">
+                    ShiftGenix là hệ thống xếp lịch trực thông minh dành cho Khoa Khám Ngoại Trú tại các bệnh viện công lập Việt Nam.
+                </p>
+                <p>
+                    Hệ thống sử dụng <strong>Thuật toán Di truyền (Genetic Algorithm)</strong> để tự động tạo lịch trực tối ưu, đảm bảo tuân thủ các ràng buộc cứng về pháp lý và tối ưu hóa các ràng buộc mềm nhằm nâng cao sự hài lòng của nhân viên y tế.
+                </p>
+
+                <hr>
+
+                <h5 class="text-success">
+                    <i class="bi bi-check-circle"></i> Mục tiêu
+                </h5>
+                <ul>
+                    <li>Giảm thời gian lập lịch thủ công từ 8-10 giờ xuống còn vài phút</li>
+                    <li>Đảm bảo công bằng trong phân công ca trực</li>
+                    <li>Tối ưu hóa việc sử dụng nguồn nhân lực hạn chế</li>
+                    <li>Cân bằng khối lượng công việc giữa các nhân viên</li>
+                    <li>Tôn trọng nguyện vọng và đặc thù của từng cá nhân</li>
+                </ul>
+
+                <hr>
+
+                <h5 class="text-info">
+                    <i class="bi bi-gear"></i> Công nghệ sử dụng
+                </h5>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-code-square"></i> Backend</h6>
+                                <ul class="list-unstyled">
+                                    <li>• Python 3.11</li>
+                                    <li>• FastAPI Framework</li>
+                                    <li>• Pydantic</li>
+                                    <li>• NumPy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-palette"></i> Frontend</h6>
+                                <ul class="list-unstyled">
+                                    <li>• HTML5 & CSS3</li>
+                                    <li>• Bootstrap 5</li>
+                                    <li>• JavaScript (ES6+)</li>
+                                    <li>• Chart.js</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="text-warning">
+                    <i class="bi bi-book"></i> Cơ sở khoa học
+                </h5>
+                <p>
+                    Hệ thống được phát triển dựa trên nghiên cứu thực tế về bài toán xếp lịch làm việc tại các bệnh viện Việt Nam, tuân thủ các quy định của:
+                </p>
+                <ul>
+                    <li>Bộ luật Lao động 2019</li>
+                    <li>Thông tư 03/2023/TT-BYT về định mức nhân lực</li>
+                    <li>Quyết định 73/2011/QĐ-TTg về chế độ trực</li>
+                    <li>Các nghiên cứu quốc tế về Nurse Scheduling Problem</li>
+                </ul>
+
+                <div class="alert alert-info mt-3">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-journal-text"></i> Tài liệu tham khảo
+                    </h6>
+                    <p class="mb-0 small">
+                        "Bài toán Xếp lịch Làm việc Tối ưu tại Khoa Khám Ngoại Trú" - Phân tích thực trạng quá tải và đề xuất giải pháp tối ưu hóa lịch trực cho các bệnh viện công lập tại Việt Nam.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield-check"></i> Ràng buộc Cứng
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Tối đa 40 giờ/tuần
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Nghỉ ≥12 giờ giữa các ca
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Tối đa 3 ca đêm liên tiếp
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Đúng chuyên môn
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Tối thiểu 1 BS + 1 ĐD/ca
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        ≤65 BN/bác sĩ/ngày
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Không xếp khi nghỉ phép
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up"></i> Ràng buộc Mềm
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Phân bổ đều ca khó
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Cân bằng khối lượng
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Ưu tiên nguyện vọng
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Kết hợp kinh nghiệm
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Giảm làm thêm giờ
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-primary"></i>
+                        Tránh ca đêm thai sản
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h6>
+                    <i class="bi bi-github"></i> Open Source
+                </h6>
+                <p class="small mb-2">
+                    Dự án mã nguồn mở, đóng góp tại:
+                </p>
+                <a href="#" class="btn btn-sm btn-dark">
+                    <i class="bi bi-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Algorithm Explanation -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-diagram-3"></i> Thuật toán Di truyền (Genetic Algorithm)
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    Thuật toán Di truyền là một phương pháp tối ưu hóa dựa trên nguyên lý tiến hóa tự nhiên, bao gồm các bước:
+                </p>
+                
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <h3 class="mb-0">1</h3>
+                            </div>
+                            <h6 class="mt-3">Khởi tạo</h6>
+                            <p class="small">Tạo quần thể ban đầu với 100 phương án ngẫu nhiên</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <h3 class="mb-0">2</h3>
+                            </div>
+                            <h6 class="mt-3">Đánh giá</h6>
+                            <p class="small">Tính điểm fitness cho mỗi phương án</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-warning text-dark rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <h3 class="mb-0">3</h3>
+                            </div>
+                            <h6 class="mt-3">Chọn lọc & Lai ghép</h6>
+                            <p class="small">Kết hợp các phương án tốt để tạo thế hệ mới</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <h3 class="mb-0">4</h3>
+                            </div>
+                            <h6 class="mt-3">Đột biến</h6>
+                            <p class="small">Thay đổi ngẫu nhiên để tăng đa dạng</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light mt-4">
+                    <p class="mb-0">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <strong>Quá trình lặp lại 500 thế hệ</strong> để tìm ra phương án lịch trực tối ưu nhất với điểm fitness cao nhất.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Xếp lịch trực - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-calendar3"></i> Tạo lịch trực tối ưu
+        </h2>
+        <p class="text-muted">Sử dụng Thuật toán Di truyền để tự động tạo lịch trực</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Configuration Panel -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear"></i> Cấu hình
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="scheduleConfig">
+                    <div class="mb-3">
+                        <label class="form-label">Số ngày trong tháng</label>
+                        <input type="number" class="form-control" id="numDays" 
+                               value="30" min="1" max="31">
+                    </div>
+
+                    <hr>
+
+                    <h6>Tham số Thuật toán Di truyền</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Kích thước quần thể
+                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                               title="Số lượng phương án trong mỗi thế hệ"></i>
+                        </label>
+                        <input type="number" class="form-control" id="populationSize" 
+                               value="100" min="10" max="500">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Số thế hệ tối đa
+                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                               title="Số lần lặp để tìm phương án tốt nhất"></i>
+                        </label>
+                        <input type="number" class="form-control" id="maxGenerations" 
+                               value="500" min="10" max="2000">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tỷ lệ đột biến
+                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                               title="Xác suất thay đổi ngẫu nhiên để tăng đa dạng"></i>
+                        </label>
+                        <input type="range" class="form-range" id="mutationRate" 
+                               min="0" max="1" step="0.01" value="0.1"
+                               oninput="document.getElementById('mutationValue').innerText = this.value">
+                        <small class="text-muted">Giá trị: <span id="mutationValue">0.1</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tỷ lệ lai ghép
+                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" 
+                               title="Xác suất kết hợp 2 phương án tốt"></i>
+                        </label>
+                        <input type="range" class="form-range" id="crossoverRate" 
+                               min="0" max="1" step="0.01" value="0.8"
+                               oninput="document.getElementById('crossoverValue').innerText = this.value">
+                        <small class="text-muted">Giá trị: <span id="crossoverValue">0.8</span></small>
+                    </div>
+
+                    <hr>
+
+                    <h6>Trọng số Ràng buộc Mềm</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Công bằng phân bổ ca (30%)</label>
+                        <input type="range" class="form-range" id="weightFair" 
+                               min="0" max="1" step="0.05" value="0.30"
+                               oninput="updateWeights()">
+                        <small class="text-muted">Giá trị: <span id="weightFairValue">0.30</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cân bằng khối lượng (25%)</label>
+                        <input type="range" class="form-range" id="weightWorkload" 
+                               min="0" max="1" step="0.05" value="0.25"
+                               oninput="updateWeights()">
+                        <small class="text-muted">Giá trị: <span id="weightWorkloadValue">0.25</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nguyện vọng cá nhân (20%)</label>
+                        <input type="range" class="form-range" id="weightPreference" 
+                               min="0" max="1" step="0.05" value="0.20"
+                               oninput="updateWeights()">
+                        <small class="text-muted">Giá trị: <span id="weightPreferenceValue">0.20</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kết hợp kinh nghiệm (15%)</label>
+                        <input type="range" class="form-range" id="weightExperience" 
+                               min="0" max="1" step="0.05" value="0.15"
+                               oninput="updateWeights()">
+                        <small class="text-muted">Giá trị: <span id="weightExperienceValue">0.15</span></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Giảm làm thêm (10%)</label>
+                        <input type="range" class="form-range" id="weightOvertime" 
+                               min="0" max="1" step="0.05" value="0.10"
+                               oninput="updateWeights()">
+                        <small class="text-muted">Giá trị: <span id="weightOvertimeValue">0.10</span></small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            Tổng trọng số: <strong id="totalWeight">1.00</strong>
+                        </small>
+                    </div>
+                </form>
+
+                <button class="btn btn-primary w-100" onclick="generateSchedule()">
+                    <i class="bi bi-play-fill"></i> Tạo lịch trực
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-lightbulb"></i> Thông tin
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <strong>Nhân viên:</strong> <span id="staffCount">0</span>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <strong>Vị trí:</strong> <span id="positionCount">0</span>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-clock text-warning"></i>
+                        <strong>Thời gian ước tính:</strong> 10-30 giây
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Panel -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up"></i> Tiến trình & Kết quả
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Progress -->
+                <div id="progressSection" style="display: none;">
+                    <div class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang xử lý...</span>
+                        </div>
+                        <p class="mt-2">Đang tạo lịch trực tối ưu...</p>
+                    </div>
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" id="progressBar" style="width: 0%">
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Thế hệ: <span id="currentGeneration">0</span> / <span id="maxGen">500</span>
+                            | Fitness: <span id="currentFitness">0</span>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="resultsSection" style="display: none;">
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-check-circle"></i> Tạo lịch thành công!
+                        </h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <strong>Điểm Fitness:</strong> 
+                                    <span class="badge bg-success fs-6" id="finalFitness">0</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Thế hệ:</strong> <span id="finalGeneration">0</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Thời gian:</strong> <span id="computationTime">0</span>s
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <strong>Vi phạm cứng:</strong> 
+                                    <span class="badge bg-danger" id="hardViolations">0</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Vi phạm mềm:</strong> 
+                                    <span class="badge bg-warning text-dark" id="softViolations">0</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="mb-3">
+                        <canvas id="fitnessChart" height="100"></canvas>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="/results" class="btn btn-primary">
+                            <i class="bi bi-table"></i> Xem lịch trực chi tiết
+                        </a>
+                        <button class="btn btn-success" onclick="exportSchedule()">
+                            <i class="bi bi-download"></i> Xuất Excel
+                        </button>
+                        <button class="btn btn-info" onclick="saveSchedule()">
+                            <i class="bi bi-save"></i> Lưu kết quả
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Initial State -->
+                <div id="initialState">
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-calendar-x" style="font-size: 4rem;"></i>
+                        <p class="mt-3">Chưa có kết quả</p>
+                        <p>Cấu hình tham số và nhấn "Tạo lịch trực" để bắt đầu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+});
+
+// Update counts
+function updateCounts() {
+    const staff = JSON.parse(localStorage.getItem('staffData') || '[]');
+    const positions = JSON.parse(localStorage.getItem('positionsData') || '[]');
+    document.getElementById('staffCount').textContent = staff.length;
+    document.getElementById('positionCount').textContent = positions.length;
+}
+
+// Update weights display
+function updateWeights() {
+    const weights = {
+        fair: parseFloat(document.getElementById('weightFair').value),
+        workload: parseFloat(document.getElementById('weightWorkload').value),
+        preference: parseFloat(document.getElementById('weightPreference').value),
+        experience: parseFloat(document.getElementById('weightExperience').value),
+        overtime: parseFloat(document.getElementById('weightOvertime').value)
+    };
+    
+    document.getElementById('weightFairValue').textContent = weights.fair.toFixed(2);
+    document.getElementById('weightWorkloadValue').textContent = weights.workload.toFixed(2);
+    document.getElementById('weightPreferenceValue').textContent = weights.preference.toFixed(2);
+    document.getElementById('weightExperienceValue').textContent = weights.experience.toFixed(2);
+    document.getElementById('weightOvertimeValue').textContent = weights.overtime.toFixed(2);
+    
+    const total = Object.values(weights).reduce((a, b) => a + b, 0);
+    document.getElementById('totalWeight').textContent = total.toFixed(2);
+}
+
+// Generate schedule
+async function generateSchedule() {
+    const staff = JSON.parse(localStorage.getItem('staffData') || '[]');
+    const positions = JSON.parse(localStorage.getItem('positionsData') || '[]');
+    
+    if (staff.length === 0 || positions.length === 0) {
+        alert('Vui lòng thêm nhân viên và vị trí trước khi tạo lịch!');
+        return;
+    }
+    
+    // Show progress
+    document.getElementById('initialState').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('progressSection').style.display = 'block';
+    
+    // Prepare payload
+    const payload = {
+        staff: staff,
+        positions: positions,
+        shifts: [
+            {id: 1, name: "morning", start_time: "07:00", end_time: "15:00", duration_hours: 8},
+            {id: 2, name: "afternoon", start_time: "15:00", end_time: "23:00", duration_hours: 8},
+            {id: 3, name: "night", start_time: "23:00", end_time: "07:00", duration_hours: 8}
+        ],
+        days: parseInt(document.getElementById('numDays').value),
+        population_size: parseInt(document.getElementById('populationSize').value),
+        max_generations: parseInt(document.getElementById('maxGenerations').value),
+        mutation_rate: parseFloat(document.getElementById('mutationRate').value),
+        crossover_rate: parseFloat(document.getElementById('crossoverRate').value),
+        weights: {
+            fair_distribution: parseFloat(document.getElementById('weightFair').value),
+            workload_balance: parseFloat(document.getElementById('weightWorkload').value),
+            respect_preferences: parseFloat(document.getElementById('weightPreference').value),
+            experience_mix: parseFloat(document.getElementById('weightExperience').value),
+            minimize_overtime: parseFloat(document.getElementById('weightOvertime').value)
+        }
+    };
+    
+    document.getElementById('maxGen').textContent = payload.max_generations;
+    
+    try {
+        // Call API
+        const response = await fetch('/api/v1/schedule/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        // Hide progress, show results
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'block';
+        
+        // Display results
+        document.getElementById('finalFitness').textContent = result.fitness_score.toFixed(2);
+        document.getElementById('finalGeneration').textContent = result.generation || payload.max_generations;
+        document.getElementById('computationTime').textContent = result.computation_time.toFixed(2);
+        document.getElementById('hardViolations').textContent = result.hard_violations;
+        document.getElementById('softViolations').textContent = result.soft_violations;
+        
+        // Save to localStorage
+        localStorage.setItem('latestSchedule', JSON.stringify(result));
+        
+        // Draw chart (mock data for now)
+        drawFitnessChart();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tạo lịch: ' + error.message);
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('initialState').style.display = 'block';
+    }
+}
+
+function drawFitnessChart() {
+    const ctx = document.getElementById('fitnessChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 50}, (_, i) => i * 10),
+            datasets: [{
+                label: 'Fitness Score',
+                data: Array.from({length: 50}, () => Math.random() * 100),
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tiến trình tối ưu hóa qua các thế hệ'
+                }
+            }
+        }
+    });
+}
+
+function exportSchedule() {
+    alert('Chức năng xuất Excel đang được phát triển');
+}
+
+function saveSchedule() {
+    alert('Đã lưu kết quả vào Local Storage');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateCounts();
+    updateWeights();
+});
+</script>
+{% endblock %}

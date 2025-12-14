@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Nhân viên - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-people-fill"></i> Quản lý Nhân viên Y tế
+        </h2>
+        <p class="text-muted">Thêm, sửa, xóa thông tin nhân viên và cấu hình nguyện vọng cá nhân</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+            <i class="bi bi-plus-circle"></i> Thêm nhân viên mới
+        </button>
+        <button class="btn btn-success" onclick="importStaff()">
+            <i class="bi bi-file-earmark-arrow-up"></i> Import từ Excel
+        </button>
+        <button class="btn btn-secondary" onclick="exportStaff()">
+            <i class="bi bi-download"></i> Export
+        </button>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <select class="form-select" id="filterRole">
+            <option value="">Tất cả chức vụ</option>
+            <option value="BacSi">Bác sĩ</option>
+            <option value="DieuDuong">Điều dưỡng</option>
+            <option value="HoSinh">Hộ sinh</option>
+            <option value="KyThuatY">Kỹ thuật y</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="filterSpecialty">
+            <option value="">Tất cả chuyên khoa</option>
+            <option value="Nội khoa">Nội khoa</option>
+            <option value="Ngoại khoa">Ngoại khoa</option>
+            <option value="Sản khoa">Sản khoa</option>
+            <option value="Nhi khoa">Nhi khoa</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="filterExperience">
+            <option value="">Tất cả kinh nghiệm</option>
+            <option value="Mới">Mới</option>
+            <option value="Có kinh nghiệm">Có kinh nghiệm</option>
+            <option value="Thâm niên">Thâm niên</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" id="searchStaff" placeholder="Tìm kiếm tên...">
+    </div>
+</div>
+
+<!-- Staff Table -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="staffTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Chức vụ</th>
+                        <th>Chuyên khoa</th>
+                        <th>Kinh nghiệm</th>
+                        <th>Giới hạn</th>
+                        <th>Nguyện vọng</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="staffTableBody">
+                    <!-- Sample data -->
+                    <tr>
+                        <td>BS001</td>
+                        <td>Nguyễn Văn A</td>
+                        <td><span class="badge bg-primary">Bác sĩ</span></td>
+                        <td>Nội khoa</td>
+                        <td><span class="badge bg-success">Thâm niên</span></td>
+                        <td>
+                            <small>
+                                <i class="bi bi-clock"></i> 40h/tuần<br>
+                                <i class="bi bi-moon"></i> ≤3 ca đêm
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">Ca sáng</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editStaff('BS001')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStaff('BS001')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>DD001</td>
+                        <td>Trần Thị B</td>
+                        <td><span class="badge bg-info">Điều dưỡng</span></td>
+                        <td>Ngoại khoa</td>
+                        <td><span class="badge bg-warning text-dark">Có kinh nghiệm</span></td>
+                        <td>
+                            <small>
+                                <i class="bi bi-clock"></i> 40h/tuần<br>
+                                <i class="bi bi-moon"></i> ≤3 ca đêm
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">Con nhỏ</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editStaff('DD001')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStaff('DD001')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div class="modal fade" id="addStaffModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus"></i> Thêm nhân viên mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addStaffForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">ID nhân viên *</label>
+                            <input type="text" class="form-control" name="id" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Họ và tên *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Chức vụ *</label>
+                            <select class="form-select" name="role" required>
+                                <option value="">Chọn chức vụ</option>
+                                <option value="BacSi">Bác sĩ</option>
+                                <option value="DieuDuong">Điều dưỡng</option>
+                                <option value="HoSinh">Hộ sinh</option>
+                                <option value="KyThuatY">Kỹ thuật y</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Chuyên khoa *</label>
+                            <select class="form-select" name="specialty" required>
+                                <option value="">Chọn chuyên khoa</option>
+                                <option value="Nội khoa">Nội khoa</option>
+                                <option value="Ngoại khoa">Ngoại khoa</option>
+                                <option value="Sản khoa">Sản khoa</option>
+                                <option value="Nhi khoa">Nhi khoa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Kinh nghiệm</label>
+                            <select class="form-select" name="experience_level">
+                                <option value="Mới">Mới</option>
+                                <option value="Có kinh nghiệm" selected>Có kinh nghiệm</option>
+                                <option value="Thâm niên">Thâm niên</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Giới hạn giờ/tuần</label>
+                            <input type="number" class="form-control" name="max_hours_per_week" value="40">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ca ưu tiên</label>
+                            <select class="form-select" name="preferred_shifts" multiple>
+                                <option value="morning">Ca sáng</option>
+                                <option value="afternoon">Ca chiều</option>
+                                <option value="night">Ca đêm</option>
+                            </select>
+                            <small class="text-muted">Giữ Ctrl để chọn nhiều</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Đặc điểm</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_pregnant" id="isPregnant">
+                                <label class="form-check-label" for="isPregnant">
+                                    Đang mang thai
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_young_children" id="hasChildren">
+                                <label class="form-check-label" for="hasChildren">
+                                    Có con nhỏ
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ngày nghỉ phép</label>
+                        <input type="text" class="form-control" name="leave_dates" 
+                               placeholder="2025-12-05, 2025-12-15">
+                        <small class="text-muted">Định dạng: YYYY-MM-DD, phân cách bằng dấu phẩy</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="saveStaff()">
+                    <i class="bi bi-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let staffData = [];
+
+// Load staff from localStorage
+function loadStaff() {
+    const stored = localStorage.getItem('staffData');
+    if (stored) {
+        staffData = JSON.parse(stored);
+        renderStaffTable();
+    }
+}
+
+// Save staff
+function saveStaff() {
+    const form = document.getElementById('addStaffForm');
+    const formData = new FormData(form);
+    
+    const staff = {
+        id: formData.get('id'),
+        name: formData.get('name'),
+        role: formData.get('role'),
+        specialty: formData.get('specialty'),
+        experience_level: formData.get('experience_level'),
+        max_hours_per_week: parseInt(formData.get('max_hours_per_week')),
+        preferred_shifts: formData.getAll('preferred_shifts'),
+        is_pregnant: formData.get('is_pregnant') === 'on',
+        has_young_children: formData.get('has_young_children') === 'on',
+        leave_dates: formData.get('leave_dates').split(',').map(d => d.trim()).filter(d => d),
+        min_rest_hours: 12,
+        max_consecutive_night_shifts: 3,
+        eligible_positions: []
+    };
+    
+    staffData.push(staff);
+    localStorage.setItem('staffData', JSON.stringify(staffData));
+    
+    // Close modal and reload
+    bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+    form.reset();
+    renderStaffTable();
+    
+    alert('Đã thêm nhân viên thành công!');
+}
+
+// Render table
+function renderStaffTable() {
+    const tbody = document.getElementById('staffTableBody');
+    tbody.innerHTML = staffData.map(staff => `
+        <tr>
+            <td>${staff.id}</td>
+            <td>${staff.name}</td>
+            <td><span class="badge bg-primary">${staff.role}</span></td>
+            <td>${staff.specialty}</td>
+            <td><span class="badge bg-success">${staff.experience_level}</span></td>
+            <td>
+                <small>
+                    <i class="bi bi-clock"></i> ${staff.max_hours_per_week}h/tuần<br>
+                    <i class="bi bi-moon"></i> ≤${staff.max_consecutive_night_shifts} ca đêm
+                </small>
+            </td>
+            <td>
+                ${staff.preferred_shifts.map(s => `<span class="badge bg-info">${s}</span>`).join(' ')}
+                ${staff.is_pregnant ? '<span class="badge bg-warning">Thai sản</span>' : ''}
+                ${staff.has_young_children ? '<span class="badge bg-warning">Con nhỏ</span>' : ''}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="editStaff('${staff.id}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStaff('${staff.id}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function deleteStaff(id) {
+    if (confirm('Bạn có chắc muốn xóa nhân viên này?')) {
+        staffData = staffData.filter(s => s.id !== id);
+        localStorage.setItem('staffData', JSON.stringify(staffData));
+        renderStaffTable();
+    }
+}
+
+function editStaff(id) {
+    alert('Chức năng sửa đang được phát triển');
+}
+
+function importStaff() {
+    alert('Chức năng import đang được phát triển');
+}
+
+function exportStaff() {
+    const dataStr = JSON.stringify(staffData, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'staff_data.json';
+    a.click();
+}
