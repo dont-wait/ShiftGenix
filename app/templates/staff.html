@@ -243,12 +243,16 @@
 <script>
 let staffData = [];
 
-// Load staff from localStorage
-function loadStaff() {
-    const stored = localStorage.getItem('staffData');
-    if (stored) {
-        staffData = JSON.parse(stored);
+// Load staff from API
+async function loadStaff() {
+    try {
+        const response = await fetch('/api/v1/staff');
+        const result = await response.json();
+        staffData = result.data;
         renderStaffTable();
+    } catch (error) {
+        console.error('Lỗi khi load dữ liệu:', error);
+        alert('Không thể tải dữ liệu nhân viên. Vui lòng kiểm tra server.');
     }
 }
 
@@ -287,11 +291,20 @@ function saveStaff() {
 // Render table
 function renderStaffTable() {
     const tbody = document.getElementById('staffTableBody');
-    tbody.innerHTML = staffData.map(staff => `
+    if (!staffData || staffData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Chưa có dữ liệu nhân viên</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = staffData.map(staff => {
+        const roleMap = {'BacSi': 'Bác sĩ', 'DieuDuong': 'Điều dưỡng'};
+        const expMap = {'Mới': 'badge-info', 'Có kinh nghiệm': 'badge-success', 'Thâm niên': 'badge-primary'};
+        
+        return `
         <tr>
-            <td>${staff.id}</td>
+            <td>BS${String(staff.id).padStart(3, '0')}</td>
             <td>${staff.name}</td>
-            <td><span class="badge bg-primary">${staff.role}</span></td>
+            <td><span class="badge bg-primary">${roleMap[staff.role] || staff.role}</span></td>
             <td>${staff.specialty}</td>
             <td><span class="badge bg-success">${staff.experience_level}</span></td>
             <td>
@@ -301,21 +314,24 @@ function renderStaffTable() {
                 </small>
             </td>
             <td>
-                ${staff.preferred_shifts.map(s => `<span class="badge bg-info">${s}</span>`).join(' ')}
+                ${(staff.preferred_shifts || []).map(s => `<span class="badge bg-info">${s}</span>`).join(' ')}
                 ${staff.is_pregnant ? '<span class="badge bg-warning">Thai sản</span>' : ''}
                 ${staff.has_young_children ? '<span class="badge bg-warning">Con nhỏ</span>' : ''}
             </td>
             <td>
-                <button class="btn btn-sm btn-warning" onclick="editStaff('${staff.id}')">
+                <button class="btn btn-sm btn-warning" onclick="editStaff(${staff.id})">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteStaff('${staff.id}')">
+                <button class="btn btn-sm btn-danger" onclick="deleteStaff(${staff.id})">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
+
+// Load data when page loads
+document.addEventListener('DOMContentLoaded', loadStaff);
 
 function deleteStaff(id) {
     if (confirm('Bạn có chắc muốn xóa nhân viên này?')) {
@@ -341,4 +357,5 @@ function exportStaff() {
     a.href = url;
     a.download = 'staff_data.json';
     a.click();
-}
+}</script>
+{% endblock %}

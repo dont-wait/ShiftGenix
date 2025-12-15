@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from datetime import date
 
 class Staff(BaseModel):
@@ -86,6 +86,6 @@ class ScheduleResponse(BaseModel):
     fitness_score: float
     hard_violations: int
     soft_violations: int
-    statistics: Dict[str, any]
+    statistics: Dict[str, Any]
     generation: int
     computation_time: float

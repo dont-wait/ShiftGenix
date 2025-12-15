@@ -1,0 +1,5 @@
+id,name,specialty_required,required_doctors,required_nurses,demand_peak,demand_midday,demand_evening
+PK_NOI_001,Phòng khám Nội khoa,Nội khoa,1,1,100,50,20
+PK_NGOAI_001,Phòng khám Ngoại khoa,Ngoại khoa,1,2,80,40,15
+PK_SAN_001,Phòng khám Sản khoa,Sản khoa,1,1,60,30,10
+PK_NHI_001,Phòng khám Nhi khoa,Nhi khoa,1,1,90,45,25

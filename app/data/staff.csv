@@ -1,0 +1,23 @@
+id,name,role,specialty,experience_level,max_hours_per_week,min_rest_hours,max_consecutive_night_shifts,is_pregnant,has_young_children,preferred_shifts,leave_dates
+BS001,Nguyễn Văn A,BacSi,Nội khoa,Thâm niên,40,12,3,False,False,morning,
+BS002,Trần Thị B,BacSi,Nội khoa,Có kinh nghiệm,40,12,3,False,True,morning,
+BS003,Lê Văn C,BacSi,Ngoại khoa,Thâm niên,40,12,3,False,False,morning|afternoon,
+BS004,Phạm Thị D,BacSi,Ngoại khoa,Có kinh nghiệm,40,12,3,False,False,afternoon,
+BS005,Hoàng Văn E,BacSi,Sản khoa,Thâm niên,40,12,3,False,False,morning,2025-12-15
+BS006,Võ Thị F,BacSi,Sản khoa,Có kinh nghiệm,40,12,3,True,False,,
+BS007,Đỗ Văn G,BacSi,Nhi khoa,Thâm niên,40,12,3,False,False,morning|afternoon,
+BS008,Nguyễn Thị H,BacSi,Nhi khoa,Có kinh nghiệm,40,12,3,False,True,morning,2025-12-20
+BS009,Trần Văn I,BacSi,Nội khoa,Mới,40,12,3,False,False,afternoon,
+BS010,Lê Thị J,BacSi,Ngoại khoa,Mới,40,12,3,False,False,afternoon,
+DD001,Phạm Văn K,DieuDuong,Nội khoa,Có kinh nghiệm,40,12,3,False,False,morning,
+DD002,Hoàng Thị L,DieuDuong,Nội khoa,Có kinh nghiệm,40,12,3,False,True,morning,
+DD003,Võ Văn M,DieuDuong,Nội khoa,Thâm niên,40,12,3,False,False,morning|afternoon,
+DD004,Đỗ Thị N,DieuDuong,Ngoại khoa,Có kinh nghiệm,40,12,3,False,False,afternoon,
+DD005,Nguyễn Văn O,DieuDuong,Ngoại khoa,Thâm niên,40,12,3,False,False,morning,
+DD006,Trần Thị P,DieuDuong,Ngoại khoa,Có kinh nghiệm,40,12,3,True,False,,2025-12-10
+DD007,Lê Văn Q,DieuDuong,Sản khoa,Có kinh nghiệm,40,12,3,False,False,morning,
+DD008,Phạm Thị R,DieuDuong,Sản khoa,Thâm niên,40,12,3,False,True,morning|afternoon,
+DD009,Hoàng Văn S,DieuDuong,Nhi khoa,Có kinh nghiệm,40,12,3,False,False,afternoon,
+DD010,Võ Thị T,DieuDuong,Nhi khoa,Có kinh nghiệm,40,12,3,False,False,morning,
+DD011,Đỗ Văn U,DieuDuong,Nội khoa,Mới,40,12,3,False,False,afternoon,
+DD012,Nguyễn Thị V,DieuDuong,Ngoại khoa,Mới,40,12,3,False,False,afternoon,

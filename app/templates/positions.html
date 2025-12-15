@@ -198,11 +198,16 @@
 <script>
 let positionsData = [];
 
-function loadPositions() {
-    const stored = localStorage.getItem('positionsData');
-    if (stored) {
-        positionsData = JSON.parse(stored);
+// Load positions from API
+async function loadPositions() {
+    try {
+        const response = await fetch('/api/v1/positions');
+        const result = await response.json();
+        positionsData = result.data;
         renderPositionsGrid();
+    } catch (error) {
+        console.error('Lỗi khi load dữ liệu:', error);
+        alert('Không thể tải dữ liệu vị trí. Vui lòng kiểm tra server.');
     }
 }
 
@@ -235,6 +240,12 @@ function savePosition() {
 
 function renderPositionsGrid() {
     const grid = document.getElementById('positionsGrid');
+    
+    if (!positionsData || positionsData.length === 0) {
+        grid.innerHTML = '<div class="col-12"><p class="text-center text-muted">Chưa có dữ liệu vị trí</p></div>';
+        return;
+    }
+    
     grid.innerHTML = positionsData.map(pos => `
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm">
@@ -255,20 +266,12 @@ function renderPositionsGrid() {
                             <li><i class="bi bi-person"></i> Điều dưỡng: <strong>${pos.required_nurses}</strong></li>
                         </ul>
                     </div>
-                    <div class="mb-2">
-                        <strong>Nhu cầu bệnh nhân:</strong>
-                        <ul class="list-unstyled ms-3 small">
-                            <li>05:00-10:00: <span class="badge bg-danger">${pos.demand.peak} BN</span></li>
-                            <li>10:00-14:00: <span class="badge bg-warning text-dark">${pos.demand.midday} BN</span></li>
-                            <li>14:00-23:00: <span class="badge bg-success">${pos.demand.evening} BN</span></li>
-                        </ul>
-                    </div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-sm btn-warning" onclick="editPosition('${pos.id}')">
+                    <button class="btn btn-sm btn-warning" onclick="editPosition('PK_${pos.id}')">
                         <i class="bi bi-pencil"></i> Sửa
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="deletePosition('${pos.id}')">
+                    <button class="btn btn-sm btn-danger" onclick="deletePosition('PK_${pos.id}')">
                         <i class="bi bi-trash"></i> Xóa
                     </button>
                 </div>
@@ -276,6 +279,9 @@ function renderPositionsGrid() {
         </div>
     `).join('');
 }
+
+// Load data when page loads
+document.addEventListener('DOMContentLoaded', loadPositions);
 
 function deletePosition(id) {
     if (confirm('Bạn có chắc muốn xóa vị trí này?')) {
@@ -287,4 +293,5 @@ function deletePosition(id) {
 
 function editPosition(id) {
     alert('Chức năng sửa đang được phát triển');
-}
+}</script>
+{% endblock %}

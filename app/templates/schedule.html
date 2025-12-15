@@ -260,18 +260,33 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Initialize tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-});
+let staffData = [];
+let positionsData = [];
+
+// Fetch staff and positions from API
+async function fetchData() {
+    try {
+        const [staffRes, posRes] = await Promise.all([
+            fetch('/api/v1/staff'),
+            fetch('/api/v1/positions')
+        ]);
+        const staffJson = await staffRes.json();
+        const posJson = await posRes.json();
+        staffData = staffJson.data;
+        positionsData = posJson.data;
+        updateCounts();
+    } catch (err) {
+        alert('Không thể tải dữ liệu nhân viên hoặc vị trí!');
+        staffData = [];
+        positionsData = [];
+        updateCounts();
+    }
+}
 
 // Update counts
 function updateCounts() {
-    const staff = JSON.parse(localStorage.getItem('staffData') || '[]');
-    const positions = JSON.parse(localStorage.getItem('positionsData') || '[]');
-    document.getElementById('staffCount').textContent = staff.length;
-    document.getElementById('positionCount').textContent = positions.length;
+    document.getElementById('staffCount').textContent = staffData.length;
+    document.getElementById('positionCount').textContent = positionsData.length;
 }
 
 // Update weights display
@@ -283,27 +298,21 @@ function updateWeights() {
         experience: parseFloat(document.getElementById('weightExperience').value),
         overtime: parseFloat(document.getElementById('weightOvertime').value)
     };
-    
     document.getElementById('weightFairValue').textContent = weights.fair.toFixed(2);
     document.getElementById('weightWorkloadValue').textContent = weights.workload.toFixed(2);
     document.getElementById('weightPreferenceValue').textContent = weights.preference.toFixed(2);
     document.getElementById('weightExperienceValue').textContent = weights.experience.toFixed(2);
     document.getElementById('weightOvertimeValue').textContent = weights.overtime.toFixed(2);
-    
     const total = Object.values(weights).reduce((a, b) => a + b, 0);
     document.getElementById('totalWeight').textContent = total.toFixed(2);
 }
 
 // Generate schedule
 async function generateSchedule() {
-    const staff = JSON.parse(localStorage.getItem('staffData') || '[]');
-    const positions = JSON.parse(localStorage.getItem('positionsData') || '[]');
-    
-    if (staff.length === 0 || positions.length === 0) {
+    if (staffData.length === 0 || positionsData.length === 0) {
         alert('Vui lòng thêm nhân viên và vị trí trước khi tạo lịch!');
         return;
     }
-    
     // Show progress
     document.getElementById('initialState').style.display = 'none';
     document.getElementById('resultsSection').style.display = 'none';
@@ -311,8 +320,8 @@ async function generateSchedule() {
     
     // Prepare payload
     const payload = {
-        staff: staff,
-        positions: positions,
+        staff: staffData,
+        positions: positionsData,
         shifts: [
             {id: 1, name: "morning", start_time: "07:00", end_time: "15:00", duration_hours: 8},
             {id: 2, name: "afternoon", start_time: "15:00", end_time: "23:00", duration_hours: 8},
@@ -405,7 +414,7 @@ function saveSchedule() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateCounts();
+    fetchData();
     updateWeights();
 });
 </script>
