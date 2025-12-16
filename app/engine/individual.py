@@ -1,36 +1,26 @@
 """
-Định nghĩa Cá thể (Individual) - Một phương án lịch trực hoàn chỉnh
+Định nghĩa Cá thể (Individual) đơn giản
+Một phương án lịch trực hoàn chỉnh
 """
 import random
-from typing import List, Dict, Set
+from typing import List, Dict
 from datetime import datetime, timedelta
-from app.schemas.schedule import Staff, Position, Shift
+from app.schemas.schedule import Staff, Department, Shift
 
 class Individual:
     """
     Cá thể = Vector 30 chiều (30 ngày)
-    Mỗi ngày chứa thông tin phân công đầy đủ cho 3 ca
+    Mỗi ngày chứa thông tin phân công cho 3 ca
     """
     
-    def __init__(self, staff: List[Staff], positions: List[Position], 
+    def __init__(self, staff: List[Staff], departments: List[Department], 
                  shifts: List[Shift], days: int = 30):
         self.staff = staff
-        self.positions = positions
+        self.departments = departments
         self.shifts = shifts
         self.days = days
         
-        # Lịch trực: List[Dict] với 30 phần tử
-        # Mỗi phần tử là 1 ngày với cấu trúc:
-        # {
-        #   "date": "2025-12-01",
-        #   "day_of_week": "Monday",
-        #   "is_weekend": False,
-        #   "shifts": {
-        #     "morning": {"PK_NOI_001": [staff_ids], ...},
-        #     "afternoon": {...},
-        #     "night": {...}
-        #   }
-        # }
+        # Lịch trực: List[Dict]
         self.schedule: List[Dict] = []
         
         # Metadata
@@ -42,9 +32,8 @@ class Individual:
         # Thống kê
         self.stats = {
             "total_shifts": 0,
-            "shift_per_staff": {},
-            "night_shifts_per_staff": {},
-            "weekend_shifts_per_staff": {}
+            "hours_per_staff": {},
+            "shifts_per_staff": {}
         }
     
     def initialize_random(self):
@@ -60,7 +49,6 @@ class Individual:
                 "date": current_date.strftime("%Y-%m-%d"),
                 "day_of_week": day_of_week,
                 "is_weekend": is_weekend,
-                "is_holiday": False,
                 "shifts": {}
             }
             
@@ -68,92 +56,71 @@ class Individual:
             for shift in self.shifts:
                 shift_assignments = {}
                 
-                # Phân công cho từng vị trí
-                for position in self.positions:
-                    # Lọc nhân viên phù hợp chuyên môn
+                # Phân công cho từng khoa
+                for department in self.departments:
+                    # Lọc nhân viên thuộc khoa này
                     eligible_staff = [
                         s for s in self.staff
-                        if (s.specialty == position.specialty_required and
-                            current_date.strftime("%Y-%m-%d") not in s.leave_dates)
+                        if s.department == department.name
                     ]
                     
                     if not eligible_staff:
-                        shift_assignments[position.name] = []
+                        shift_assignments[department.name] = []
                         continue
                     
-                    # Chọn ngẫu nhiên bác sĩ và điều dưỡng
-                    doctors = [s for s in eligible_staff if s.role == "BacSi"]
-                    nurses = [s for s in eligible_staff if s.role == "DieuDuong"]
+                    # Chọn ngẫu nhiên số lượng nhân viên cần thiết
+                    num_needed = department.required_staff_per_shift
+                    selected = random.sample(
+                        eligible_staff,
+                        min(num_needed, len(eligible_staff))
+                    )
                     
-                    assigned = []
-                    
-                    # Chọn bác sĩ
-                    if doctors and position.required_doctors > 0:
-                        selected_doctors = random.sample(
-                            doctors, 
-                            min(position.required_doctors, len(doctors))
-                        )
-                        assigned.extend([d.name for d in selected_doctors])
-                    
-                    # Chọn điều dưỡng
-                    if nurses and position.required_nurses > 0:
-                        selected_nurses = random.sample(
-                            nurses,
-                            min(position.required_nurses, len(nurses))
-                        )
-                        assigned.extend([n.name for n in selected_nurses])
-                    
-                    shift_assignments[position.name] = assigned
+                    shift_assignments[department.name] = [s.staff_id for s in selected]
                 
                 day_schedule["shifts"][shift.name] = shift_assignments
             
             self.schedule.append(day_schedule)
     
-    def get_staff_by_name(self, name: str) -> Staff:
-        """Lấy thông tin nhân viên theo tên"""
+    def get_staff_by_id(self, staff_id: str) -> Staff:
+        """Lấy thông tin nhân viên theo ID"""
         for s in self.staff:
-            if s.name == name:
+            if s.staff_id == staff_id:
                 return s
         return None
     
-    def get_staff_schedule(self, staff_name: str) -> List[Dict]:
+    def get_staff_schedule(self, staff_id: str) -> List[Dict]:
         """Lấy tất cả ca trực của 1 nhân viên"""
         result = []
         
         for day_idx, day in enumerate(self.schedule):
-            for shift_name, positions_dict in day["shifts"].items():
-                for position_name, staff_list in positions_dict.items():
-                    if staff_name in staff_list:
+            for shift_name, departments_dict in day["shifts"].items():
+                for department_name, staff_list in departments_dict.items():
+                    if staff_id in staff_list:
                         result.append({
                             "day": day_idx + 1,
                             "date": day["date"],
                             "shift": shift_name,
-                            "position": position_name
+                            "department": department_name
                         })
         
         return result
     
-    def count_shifts(self, staff_name: str) -> int:
+    def count_shifts(self, staff_id: str) -> int:
         """Đếm tổng số ca trực của nhân viên"""
-        return len(self.get_staff_schedule(staff_name))
+        return len(self.get_staff_schedule(staff_id))
     
-    def count_night_shifts(self, staff_name: str) -> int:
-        """Đếm số ca đêm của nhân viên"""
-        schedule = self.get_staff_schedule(staff_name)
-        return sum(1 for s in schedule if s["shift"] == "night")
+    def calculate_hours(self, staff_id: str) -> int:
+        """Tính tổng số giờ làm việc của nhân viên"""
+        schedule = self.get_staff_schedule(staff_id)
+        staff_obj = self.get_staff_by_id(staff_id)
+        
+        if not staff_obj:
+            return 0
+        
+        total_hours = len(schedule) * staff_obj.shift_duration_hours
+        return total_hours
     
-    def count_weekend_shifts(self, staff_name: str) -> int:
-        """Đếm số ca cuối tuần của nhân viên"""
-        weekend_count = 0
-        for day in self.schedule:
-            if day["is_weekend"]:
-                for shift_name, positions_dict in day["shifts"].items():
-                    for position_name, staff_list in positions_dict.items():
-                        if staff_name in staff_list:
-                            weekend_count += 1
-        return weekend_count
-    
-    def is_working_on(self, staff_name: str, day_idx: int, shift_name: str = None) -> bool:
+    def is_working_on(self, staff_id: str, day_idx: int, shift_name: str = None) -> bool:
         """Kiểm tra nhân viên có làm việc vào ngày/ca cụ thể không"""
         if day_idx >= len(self.schedule):
             return False
@@ -162,15 +129,15 @@ class Individual:
         
         if shift_name:
             # Kiểm tra ca cụ thể
-            positions_dict = day["shifts"].get(shift_name, {})
-            for position_name, staff_list in positions_dict.items():
-                if staff_name in staff_list:
+            departments_dict = day["shifts"].get(shift_name, {})
+            for department_name, staff_list in departments_dict.items():
+                if staff_id in staff_list:
                     return True
         else:
             # Kiểm tra cả ngày
-            for shift_name, positions_dict in day["shifts"].items():
-                for position_name, staff_list in positions_dict.items():
-                    if staff_name in staff_list:
+            for shift_name, departments_dict in day["shifts"].items():
+                for department_name, staff_list in departments_dict.items():
+                    if staff_id in staff_list:
                         return True
         
         return False
@@ -178,33 +145,27 @@ class Individual:
     def calculate_statistics(self):
         """Tính toán thống kê"""
         total_shifts = 0
-        shift_per_staff = {}
-        night_shifts_per_staff = {}
-        weekend_shifts_per_staff = {}
+        hours_per_staff = {}
+        shifts_per_staff = {}
         
         for staff_member in self.staff:
-            name = staff_member.name
-            shift_per_staff[name] = self.count_shifts(name)
-            night_shifts_per_staff[name] = self.count_night_shifts(name)
-            weekend_shifts_per_staff[name] = self.count_weekend_shifts(name)
-            total_shifts += shift_per_staff[name]
+            staff_id = staff_member.staff_id
+            shifts_per_staff[staff_id] = self.count_shifts(staff_id)
+            hours_per_staff[staff_id] = self.calculate_hours(staff_id)
+            total_shifts += shifts_per_staff[staff_id]
         
         self.stats = {
             "total_shifts": total_shifts,
-            "shift_per_staff": shift_per_staff,
-            "night_shifts_per_staff": night_shifts_per_staff,
-            "weekend_shifts_per_staff": weekend_shifts_per_staff
+            "hours_per_staff": hours_per_staff,
+            "shifts_per_staff": shifts_per_staff
         }
     
     def copy(self):
         """Tạo bản sao của cá thể"""
-        new_individual = Individual(self.staff, self.positions, self.shifts, self.days)
+        new_individual = Individual(self.staff, self.departments, self.shifts, self.days)
         
-        # Deep copy schedule
         import copy
         new_individual.schedule = copy.deepcopy(self.schedule)
-        
-        # Copy metadata
         new_individual.fitness_score = self.fitness_score
         new_individual.hard_violations = self.hard_violations
         new_individual.soft_violations = self.soft_violations
@@ -215,5 +176,4 @@ class Individual:
     
     def __repr__(self):
         return (f"Individual(fitness={self.fitness_score:.2f}, "
-                f"hard_violations={self.hard_violations}, "
-                f"soft_violations={self.soft_violations})")
+                f"violations={self.hard_violations})")

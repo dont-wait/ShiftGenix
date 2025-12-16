@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Khoa - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-hospital"></i> Quản lý Khoa/Phòng ban
+        </h2>
+        <p class="text-muted">Cấu hình các khoa và yêu cầu nhân lực cho mỗi ca</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <button class="btn btn-primary" onclick="loadFromAPI()">
+            <i class="bi bi-cloud-download"></i> Load từ CSV
+        </button>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addDeptModal">
+            <i class="bi bi-plus-circle"></i> Thêm khoa
+        </button>
+    </div>
+</div>
+
+<!-- Departments Grid -->
+<div id="loadingMessage" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Nhấn "Load từ CSV" để tải dữ liệu</p>
+</div>
+
+<div class="row g-4" id="departmentsGrid" style="display: none;">
+</div>
+
+<!-- Add Department Modal -->
+<div class="modal fade" id="addDeptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle"></i> Thêm khoa mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDeptForm">
+                    <div class="mb-3">
+                        <label class="form-label">Mã khoa *</label>
+                        <input type="text" class="form-control" name="id" required placeholder="DEPT007">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên khoa *</label>
+                        <input type="text" class="form-control" name="name" required placeholder="Radiology">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số nhân viên tối thiểu/ca *</label>
+                        <input type="number" class="form-control" name="required_staff_per_shift" value="2" min="1" required>
+                        <small class="text-muted">Số lượng nhân viên cần thiết cho mỗi ca làm việc</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tải bệnh nhân tối đa</label>
+                        <input type="number" class="form-control" name="max_patient_load" value="100" min="1">
+                        <small class="text-muted">Số lượng bệnh nhân tối đa khoa có thể tiếp nhận</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="saveDepartment()">
+                    <i class="bi bi-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let departmentsData = [];
+
+async function loadFromAPI() {
+    try {
+        document.getElementById('loadingMessage').style.display = 'block';
+        document.getElementById('departmentsGrid').style.display = 'none';
+        
+        const response = await fetch('/api/v1/departments');
+        const result = await response.json();
+        
+        if (result.success) {
+            departmentsData = result.data;
+            renderDepartmentsGrid();
+            
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('departmentsGrid').style.display = 'flex';
+            
+            localStorage.setItem('departmentsData', JSON.stringify(departmentsData));
+        } else {
+            alert('Không load được dữ liệu');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Lỗi: ' + error.message);
+    }
+}
+
+function renderDepartmentsGrid() {
+    const grid = document.getElementById('departmentsGrid');
+    grid.innerHTML = departmentsData.map(dept => `
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-hospital"></i> ${dept.name}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Mã khoa:</strong>
+                        <span class="badge bg-secondary">${dept.id}</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Nhân viên tối thiểu/ca:</strong>
+                        <h3 class="text-primary">${dept.required_staff_per_shift}</h3>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Tải bệnh nhân tối đa:</strong>
+                        <h4 class="text-success">${dept.max_patient_load}</h4>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-warning" onclick="editDepartment('${dept.id}')">
+                        <i class="bi bi-pencil"></i> Sửa
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteDepartment('${dept.id}')">
+                        <i class="bi bi-trash"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveDepartment() {
+    const form = document.getElementById('addDeptForm');
+    const formData = new FormData(form);
+    
+    const newDept = {
+        id: formData.get('id'),
+        name: formData.get('name'),
+        required_staff_per_shift: parseInt(formData.get('required_staff_per_shift')),
+        max_patient_load: parseInt(formData.get('max_patient_load'))
+    };
+    
+    departmentsData.push(newDept);
+    localStorage.setItem('departmentsData', JSON.stringify(departmentsData));
+    
+    bootstrap.Modal.getInstance(document.getElementById('addDeptModal')).hide();
+    form.reset();
+    renderDepartmentsGrid();
+    
+    alert('Đã thêm khoa thành công!');
+}
+
+function deleteDepartment(id) {
+    if (confirm('Bạn có chắc muốn xóa khoa này?')) {
+        departmentsData = departmentsData.filter(d => d.id !== id);
+        localStorage.setItem('departmentsData', JSON.stringify(departmentsData));
+        renderDepartmentsGrid();
+    }
+}
+
+function editDepartment(id) {
+    alert('Chức năng sửa đang được phát triển');
+}
+
+// Load từ localStorage khi vào trang
+document.addEventListener('DOMContentLoaded', () => {
+    const stored = localStorage.getItem('departmentsData');
+    if (stored) {
+        departmentsData = JSON.parse(stored);
+        renderDepartmentsGrid();
+        document.getElementById('loadingMessage').style.display = 'none';
+        document.getElementById('departmentsGrid').style.display = 'flex';
+    }
+});
+</script>
+{% endblock %}

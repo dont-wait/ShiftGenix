@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from typing import List
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -30,11 +29,11 @@ def staff_management(request: Request):
         {"request": request}
     )
 
-@router.get("/positions", response_class=HTMLResponse)
-def position_management(request: Request):
-    """Trang quản lý vị trí công việc"""
+@router.get("/departments", response_class=HTMLResponse)
+def department_management(request: Request):
+    """Trang quản lý khoa/phòng ban"""
     return templates.TemplateResponse(
-        "positions.html",
+        "departments.html",
         {"request": request}
     )
 

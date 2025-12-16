@@ -1,33 +1,29 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
-from datetime import date
 
 class Staff(BaseModel):
-    """Nhân viên y tế"""
-    id: int
-    name: str
-    role: str  # "BacSi", "DieuDuong", "HoSinh", "KyThuatY"
-    specialty: str  # "Nội khoa", "Ngoại khoa", "Sản khoa", "Nhi khoa"
-    experience_level: str = "Có kinh nghiệm"  # "Mới", "Có kinh nghiệm", "Thâm niên"
+    """Nhân viên y tế - Schema đơn giản"""
+    staff_id: str  # S00000
+    department: str  # Pediatrics, Surgery, etc.
+    shift_duration_hours: int  # 8, 10, 12
+    patient_load: int  # Số bệnh nhân/ca
+    workdays_per_month: int  # Số ngày làm việc/tháng
+    satisfaction_score: float  # Điểm hài lòng
+    overtime_hours: int  # Giờ làm thêm
+    years_of_experience: int  # Số năm kinh nghiệm
+    previous_satisfaction_rating: float  # Đánh giá trước
+    absenteeism_days: int  # Số ngày vắng mặt
     
-    # Giới hạn thời gian
-    max_hours_per_week: int = 40
-    min_rest_hours: int = 12
-    max_consecutive_night_shifts: int = 3
-    
-    # Ngày nghỉ phép
-    leave_dates: List[str] = []
-    
-    # Nguyện vọng cá nhân
-    preferred_shifts: List[str] = []  # ["morning", "afternoon", "night"]
-    avoid_days: List[str] = []  # ["Monday", "Tuesday", ...]
-    
-    # Đặc điểm cá nhân
-    is_pregnant: bool = False
-    has_young_children: bool = False
-    
-    # Vị trí có thể trực
-    eligible_positions: List[str] = []
+    # Thêm thông tin bổ sung nếu cần
+    role: str = "Doctor"  # Doctor, Nurse
+    eligible_departments: List[str] = []  # Các khoa có thể làm
+
+class Department(BaseModel):
+    """Khoa/Phòng ban"""
+    id: str
+    name: str  # Pediatrics, Surgery, etc.
+    required_staff_per_shift: int = 1  # Số nhân viên tối thiểu/ca
+    max_patient_load: int = 100  # Tải bệnh nhân tối đa
 
 class Shift(BaseModel):
     """Ca làm việc"""
@@ -37,24 +33,11 @@ class Shift(BaseModel):
     end_time: str  # "15:00"
     duration_hours: int = 8
 
-class Position(BaseModel):
-    """Vị trí công việc (Phòng khám)"""
-    id: int
-    name: str  # "Phòng_khám_Nội", "Phòng_khám_Ngoại"
-    required_doctors: int = 1
-    required_nurses: int = 1
-    specialty_required: str  # "Nội khoa", "Ngoại khoa"
-
-class DemandPattern(BaseModel):
-    """Mẫu nhu cầu bệnh nhân"""
-    time_slot: str
-    estimated_patients: int
-
 class ScheduleRequest(BaseModel):
     """Request để tạo lịch trực"""
     staff: List[Staff]
+    departments: List[Department]
     shifts: List[Shift]
-    positions: List[Position]
     days: int = 30
     
     # Cấu hình GA
@@ -63,13 +46,16 @@ class ScheduleRequest(BaseModel):
     mutation_rate: float = 0.1
     crossover_rate: float = 0.8
     
+    # Ràng buộc đơn giản
+    min_hours_per_month: int = 160  # Tối thiểu 160 giờ/tháng
+    max_consecutive_shifts: int = 2  # Không làm quá 2 ca liên tiếp
+    
     # Trọng số ràng buộc mềm
     weights: Dict[str, float] = {
-        "fair_distribution": 0.30,
-        "workload_balance": 0.25,
-        "respect_preferences": 0.20,
-        "experience_mix": 0.15,
-        "minimize_overtime": 0.10
+        "workload_balance": 0.40,        # Cân bằng khối lượng
+        "satisfaction": 0.30,            # Tối ưu sự hài lòng
+        "experience_distribution": 0.20, # Phân bổ kinh nghiệm
+        "minimize_overtime": 0.10        # Giảm làm thêm
     }
 
 class DaySchedule(BaseModel):
@@ -77,8 +63,7 @@ class DaySchedule(BaseModel):
     date: str
     day_of_week: str
     is_weekend: bool
-    is_holiday: bool
-    shifts: Dict[str, Dict[str, List[str]]]  # {shift_name: {position_name: [staff_ids]}}
+    shifts: Dict[str, Dict[str, List[str]]]  # {shift_name: {department: [staff_ids]}}
 
 class ScheduleResponse(BaseModel):
     """Response trả về lịch trực"""

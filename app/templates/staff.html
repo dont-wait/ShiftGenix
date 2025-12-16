@@ -8,20 +8,20 @@
         <h2>
             <i class="bi bi-people-fill"></i> Quản lý Nhân viên Y tế
         </h2>
-        <p class="text-muted">Thêm, sửa, xóa thông tin nhân viên và cấu hình nguyện vọng cá nhân</p>
+        <p class="text-muted">Quản lý thông tin bác sĩ, điều dưỡng, kinh nghiệm và mức độ hài lòng</p>
     </div>
 </div>
 
 <div class="row mb-3">
     <div class="col-12">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-            <i class="bi bi-plus-circle"></i> Thêm nhân viên mới
+        <button class="btn btn-primary" onclick="loadFromAPI()">
+            <i class="bi bi-cloud-download"></i> Load từ CSV
         </button>
-        <button class="btn btn-success" onclick="importStaff()">
-            <i class="bi bi-file-earmark-arrow-up"></i> Import từ Excel
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+            <i class="bi bi-plus-circle"></i> Thêm nhân viên
         </button>
         <button class="btn btn-secondary" onclick="exportStaff()">
-            <i class="bi bi-download"></i> Export
+            <i class="bi bi-download"></i> Export JSON
         </button>
     </div>
 </div>
@@ -29,105 +29,96 @@
 <!-- Filter -->
 <div class="row mb-3">
     <div class="col-md-3">
-        <select class="form-select" id="filterRole">
-            <option value="">Tất cả chức vụ</option>
-            <option value="BacSi">Bác sĩ</option>
-            <option value="DieuDuong">Điều dưỡng</option>
-            <option value="HoSinh">Hộ sinh</option>
-            <option value="KyThuatY">Kỹ thuật y</option>
+        <select class="form-select" id="filterRole" onchange="filterTable()">
+            <option value="">Tất cả vai trò</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Nurse">Nurse</option>
         </select>
     </div>
     <div class="col-md-3">
-        <select class="form-select" id="filterSpecialty">
-            <option value="">Tất cả chuyên khoa</option>
-            <option value="Nội khoa">Nội khoa</option>
-            <option value="Ngoại khoa">Ngoại khoa</option>
-            <option value="Sản khoa">Sản khoa</option>
-            <option value="Nhi khoa">Nhi khoa</option>
+        <select class="form-select" id="filterDepartment" onchange="filterTable()">
+            <option value="">Tất cả khoa</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="Surgery">Surgery</option>
+            <option value="Emergency">Emergency</option>
+            <option value="Cardiology">Cardiology</option>
+            <option value="Neurology">Neurology</option>
+            <option value="Orthopedics">Orthopedics</option>
         </select>
     </div>
     <div class="col-md-3">
-        <select class="form-select" id="filterExperience">
-            <option value="">Tất cả kinh nghiệm</option>
-            <option value="Mới">Mới</option>
-            <option value="Có kinh nghiệm">Có kinh nghiệm</option>
-            <option value="Thâm niên">Thâm niên</option>
-        </select>
+        <input type="number" class="form-control" id="filterMinExp" placeholder="Kinh nghiệm tối thiểu" onchange="filterTable()">
     </div>
     <div class="col-md-3">
-        <input type="text" class="form-control" id="searchStaff" placeholder="Tìm kiếm tên...">
+        <input type="text" class="form-control" id="searchStaff" placeholder="Tìm ID hoặc tên..." onkeyup="filterTable()">
     </div>
 </div>
 
 <!-- Staff Table -->
 <div class="card shadow-sm">
     <div class="card-body">
-        <div class="table-responsive">
+        <div id="loadingMessage" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Nhấn "Load từ CSV" để tải dữ liệu</p>
+        </div>
+        
+        <div class="table-responsive" id="tableContainer" style="display: none;">
             <table class="table table-hover" id="staffTable">
                 <thead class="table-light">
                     <tr>
-                        <th>ID</th>
-                        <th>Họ tên</th>
-                        <th>Chức vụ</th>
-                        <th>Chuyên khoa</th>
+                        <th>Staff ID</th>
+                        <th>Vai trò</th>
+                        <th>Khoa</th>
+                        <th>Giờ/Ca</th>
+                        <th>BN/Ca</th>
+                        <th>Ngày/Tháng</th>
                         <th>Kinh nghiệm</th>
-                        <th>Giới hạn</th>
-                        <th>Nguyện vọng</th>
+                        <th>Hài lòng</th>
+                        <th>Làm thêm</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="staffTableBody">
-                    <!-- Sample data -->
-                    <tr>
-                        <td>BS001</td>
-                        <td>Nguyễn Văn A</td>
-                        <td><span class="badge bg-primary">Bác sĩ</span></td>
-                        <td>Nội khoa</td>
-                        <td><span class="badge bg-success">Thâm niên</span></td>
-                        <td>
-                            <small>
-                                <i class="bi bi-clock"></i> 40h/tuần<br>
-                                <i class="bi bi-moon"></i> ≤3 ca đêm
-                            </small>
-                        </td>
-                        <td>
-                            <span class="badge bg-info">Ca sáng</span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-warning" onclick="editStaff('BS001')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteStaff('BS001')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>DD001</td>
-                        <td>Trần Thị B</td>
-                        <td><span class="badge bg-info">Điều dưỡng</span></td>
-                        <td>Ngoại khoa</td>
-                        <td><span class="badge bg-warning text-dark">Có kinh nghiệm</span></td>
-                        <td>
-                            <small>
-                                <i class="bi bi-clock"></i> 40h/tuần<br>
-                                <i class="bi bi-moon"></i> ≤3 ca đêm
-                            </small>
-                        </td>
-                        <td>
-                            <span class="badge bg-warning text-dark">Con nhỏ</span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-warning" onclick="editStaff('DD001')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteStaff('DD001')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="row mt-4" id="statsSection" style="display: none;">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary" id="totalStaff">0</h3>
+                <p class="mb-0">Tổng nhân viên</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success" id="avgExperience">0</h3>
+                <p class="mb-0">TB Kinh nghiệm (năm)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning" id="avgSatisfaction">0</h3>
+                <p class="mb-0">TB Hài lòng</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-danger" id="totalOvertime">0</h3>
+                <p class="mb-0">Tổng giờ làm thêm</p>
+            </div>
         </div>
     </div>
 </div>
@@ -146,85 +137,75 @@
                 <form id="addStaffForm">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">ID nhân viên *</label>
-                            <input type="text" class="form-control" name="id" required>
+                            <label class="form-label">Staff ID *</label>
+                            <input type="text" class="form-control" name="staff_id" required placeholder="S00021">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Họ và tên *</label>
-                            <input type="text" class="form-control" name="name" required>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Chức vụ *</label>
+                            <label class="form-label">Vai trò *</label>
                             <select class="form-select" name="role" required>
-                                <option value="">Chọn chức vụ</option>
-                                <option value="BacSi">Bác sĩ</option>
-                                <option value="DieuDuong">Điều dưỡng</option>
-                                <option value="HoSinh">Hộ sinh</option>
-                                <option value="KyThuatY">Kỹ thuật y</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Chuyên khoa *</label>
-                            <select class="form-select" name="specialty" required>
-                                <option value="">Chọn chuyên khoa</option>
-                                <option value="Nội khoa">Nội khoa</option>
-                                <option value="Ngoại khoa">Ngoại khoa</option>
-                                <option value="Sản khoa">Sản khoa</option>
-                                <option value="Nhi khoa">Nhi khoa</option>
+                                <option value="">Chọn vai trò</option>
+                                <option value="Doctor">Doctor</option>
+                                <option value="Nurse">Nurse</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Kinh nghiệm</label>
-                            <select class="form-select" name="experience_level">
-                                <option value="Mới">Mới</option>
-                                <option value="Có kinh nghiệm" selected>Có kinh nghiệm</option>
-                                <option value="Thâm niên">Thâm niên</option>
+                            <label class="form-label">Khoa *</label>
+                            <select class="form-select" name="department" required>
+                                <option value="">Chọn khoa</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="Surgery">Surgery</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Neurology">Neurology</option>
+                                <option value="Orthopedics">Orthopedics</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Giới hạn giờ/tuần</label>
-                            <input type="number" class="form-control" name="max_hours_per_week" value="40">
+                            <label class="form-label">Giờ/Ca *</label>
+                            <select class="form-select" name="shift_duration_hours" required>
+                                <option value="8">8 giờ</option>
+                                <option value="10" selected>10 giờ</option>
+                                <option value="12">12 giờ</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Ca ưu tiên</label>
-                            <select class="form-select" name="preferred_shifts" multiple>
-                                <option value="morning">Ca sáng</option>
-                                <option value="afternoon">Ca chiều</option>
-                                <option value="night">Ca đêm</option>
-                            </select>
-                            <small class="text-muted">Giữ Ctrl để chọn nhiều</small>
+                        <div class="col-md-4">
+                            <label class="form-label">Bệnh nhân/Ca</label>
+                            <input type="number" class="form-control" name="patient_load" value="10" min="0">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Đặc điểm</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="is_pregnant" id="isPregnant">
-                                <label class="form-check-label" for="isPregnant">
-                                    Đang mang thai
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="has_young_children" id="hasChildren">
-                                <label class="form-check-label" for="hasChildren">
-                                    Có con nhỏ
-                                </label>
-                            </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày làm/Tháng</label>
+                            <input type="number" class="form-control" name="workdays_per_month" value="20" min="1" max="31">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kinh nghiệm (năm)</label>
+                            <input type="number" class="form-control" name="years_of_experience" value="5" min="0">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Điểm hài lòng</label>
+                            <input type="number" step="0.01" class="form-control" name="satisfaction_score" value="2.5" min="0" max="5">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Giờ làm thêm</label>
+                            <input type="number" class="form-control" name="overtime_hours" value="0" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày vắng mặt</label>
+                            <input type="number" class="form-control" name="absenteeism_days" value="0" min="0">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Ngày nghỉ phép</label>
-                        <input type="text" class="form-control" name="leave_dates" 
-                               placeholder="2025-12-05, 2025-12-15">
-                        <small class="text-muted">Định dạng: YYYY-MM-DD, phân cách bằng dấu phẩy</small>
+                        <label class="form-label">Đánh giá trước</label>
+                        <input type="number" step="0.01" class="form-control" name="previous_satisfaction_rating" value="3.0" min="0" max="5">
                     </div>
                 </form>
             </div>
@@ -243,110 +224,153 @@
 <script>
 let staffData = [];
 
-// Load staff from API
-async function loadStaff() {
+async function loadFromAPI() {
     try {
+        document.getElementById('loadingMessage').style.display = 'block';
+        document.getElementById('tableContainer').style.display = 'none';
+        
         const response = await fetch('/api/v1/staff');
         const result = await response.json();
-        staffData = result.data;
-        renderStaffTable();
+        
+        if (result.success) {
+            staffData = result.data;
+            renderStaffTable();
+            updateStats();
+            
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('tableContainer').style.display = 'block';
+            document.getElementById('statsSection').style.display = 'flex';
+            
+            // Lưu vào localStorage
+            localStorage.setItem('staffData', JSON.stringify(staffData));
+        } else {
+            alert('Không load được dữ liệu');
+        }
     } catch (error) {
-        console.error('Lỗi khi load dữ liệu:', error);
-        alert('Không thể tải dữ liệu nhân viên. Vui lòng kiểm tra server.');
+        console.error('Error:', error);
+        alert('Lỗi: ' + error.message);
     }
 }
 
-// Save staff
-function saveStaff() {
-    const form = document.getElementById('addStaffForm');
-    const formData = new FormData(form);
-    
-    const staff = {
-        id: formData.get('id'),
-        name: formData.get('name'),
-        role: formData.get('role'),
-        specialty: formData.get('specialty'),
-        experience_level: formData.get('experience_level'),
-        max_hours_per_week: parseInt(formData.get('max_hours_per_week')),
-        preferred_shifts: formData.getAll('preferred_shifts'),
-        is_pregnant: formData.get('is_pregnant') === 'on',
-        has_young_children: formData.get('has_young_children') === 'on',
-        leave_dates: formData.get('leave_dates').split(',').map(d => d.trim()).filter(d => d),
-        min_rest_hours: 12,
-        max_consecutive_night_shifts: 3,
-        eligible_positions: []
-    };
-    
-    staffData.push(staff);
-    localStorage.setItem('staffData', JSON.stringify(staffData));
-    
-    // Close modal and reload
-    bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
-    form.reset();
-    renderStaffTable();
-    
-    alert('Đã thêm nhân viên thành công!');
-}
-
-// Render table
 function renderStaffTable() {
     const tbody = document.getElementById('staffTableBody');
-    if (!staffData || staffData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Chưa có dữ liệu nhân viên</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = staffData.map(staff => {
-        const roleMap = {'BacSi': 'Bác sĩ', 'DieuDuong': 'Điều dưỡng'};
-        const expMap = {'Mới': 'badge-info', 'Có kinh nghiệm': 'badge-success', 'Thâm niên': 'badge-primary'};
-        
-        return `
+    tbody.innerHTML = staffData.map(staff => `
         <tr>
-            <td>BS${String(staff.id).padStart(3, '0')}</td>
-            <td>${staff.name}</td>
-            <td><span class="badge bg-primary">${roleMap[staff.role] || staff.role}</span></td>
-            <td>${staff.specialty}</td>
-            <td><span class="badge bg-success">${staff.experience_level}</span></td>
+            <td><strong>${staff.staff_id}</strong></td>
+            <td><span class="badge ${staff.role === 'Doctor' ? 'bg-primary' : 'bg-info'}">${staff.role}</span></td>
+            <td>${staff.department}</td>
+            <td>${staff.shift_duration_hours}h</td>
+            <td>${staff.patient_load}</td>
+            <td>${staff.workdays_per_month}</td>
+            <td>${staff.years_of_experience} năm</td>
+            <td>${staff.satisfaction_score.toFixed(2)}</td>
+            <td>${staff.overtime_hours}h</td>
             <td>
-                <small>
-                    <i class="bi bi-clock"></i> ${staff.max_hours_per_week}h/tuần<br>
-                    <i class="bi bi-moon"></i> ≤${staff.max_consecutive_night_shifts} ca đêm
-                </small>
-            </td>
-            <td>
-                ${(staff.preferred_shifts || []).map(s => `<span class="badge bg-info">${s}</span>`).join(' ')}
-                ${staff.is_pregnant ? '<span class="badge bg-warning">Thai sản</span>' : ''}
-                ${staff.has_young_children ? '<span class="badge bg-warning">Con nhỏ</span>' : ''}
-            </td>
-            <td>
-                <button class="btn btn-sm btn-warning" onclick="editStaff(${staff.id})">
+                <button class="btn btn-sm btn-warning" onclick="editStaff('${staff.staff_id}')">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteStaff(${staff.id})">
+                <button class="btn btn-sm btn-danger" onclick="deleteStaff('${staff.staff_id}')">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
-    `}).join('');
+    `).join('');
 }
 
-// Load data when page loads
-document.addEventListener('DOMContentLoaded', loadStaff);
+function updateStats() {
+    if (staffData.length === 0) return;
+    
+    document.getElementById('totalStaff').textContent = staffData.length;
+    
+    const avgExp = staffData.reduce((sum, s) => sum + s.years_of_experience, 0) / staffData.length;
+    document.getElementById('avgExperience').textContent = avgExp.toFixed(1);
+    
+    const avgSat = staffData.reduce((sum, s) => sum + s.satisfaction_score, 0) / staffData.length;
+    document.getElementById('avgSatisfaction').textContent = avgSat.toFixed(2);
+    
+    const totalOT = staffData.reduce((sum, s) => sum + s.overtime_hours, 0);
+    document.getElementById('totalOvertime').textContent = totalOT;
+}
+
+function filterTable() {
+    const roleFilter = document.getElementById('filterRole').value;
+    const deptFilter = document.getElementById('filterDepartment').value;
+    const minExp = parseInt(document.getElementById('filterMinExp').value) || 0;
+    const search = document.getElementById('searchStaff').value.toLowerCase();
+    
+    const filtered = staffData.filter(s => {
+        if (roleFilter && s.role !== roleFilter) return false;
+        if (deptFilter && s.department !== deptFilter) return false;
+        if (s.years_of_experience < minExp) return false;
+        if (search && !s.staff_id.toLowerCase().includes(search)) return false;
+        return true;
+    });
+    
+    const tbody = document.getElementById('staffTableBody');
+    tbody.innerHTML = filtered.map(staff => `
+        <tr>
+            <td><strong>${staff.staff_id}</strong></td>
+            <td><span class="badge ${staff.role === 'Doctor' ? 'bg-primary' : 'bg-info'}">${staff.role}</span></td>
+            <td>${staff.department}</td>
+            <td>${staff.shift_duration_hours}h</td>
+            <td>${staff.patient_load}</td>
+            <td>${staff.workdays_per_month}</td>
+            <td>${staff.years_of_experience} năm</td>
+            <td>${staff.satisfaction_score.toFixed(2)}</td>
+            <td>${staff.overtime_hours}h</td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="editStaff('${staff.staff_id}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStaff('${staff.staff_id}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function saveStaff() {
+    const form = document.getElementById('addStaffForm');
+    const formData = new FormData(form);
+    
+    const newStaff = {
+        staff_id: formData.get('staff_id'),
+        role: formData.get('role'),
+        department: formData.get('department'),
+        shift_duration_hours: parseInt(formData.get('shift_duration_hours')),
+        patient_load: parseInt(formData.get('patient_load')),
+        workdays_per_month: parseInt(formData.get('workdays_per_month')),
+        satisfaction_score: parseFloat(formData.get('satisfaction_score')),
+        overtime_hours: parseInt(formData.get('overtime_hours')),
+        years_of_experience: parseInt(formData.get('years_of_experience')),
+        previous_satisfaction_rating: parseFloat(formData.get('previous_satisfaction_rating')),
+        absenteeism_days: parseInt(formData.get('absenteeism_days')),
+        eligible_departments: [formData.get('department')]
+    };
+    
+    staffData.push(newStaff);
+    localStorage.setItem('staffData', JSON.stringify(staffData));
+    
+    bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+    form.reset();
+    renderStaffTable();
+    updateStats();
+    
+    alert('Đã thêm nhân viên thành công!');
+}
 
 function deleteStaff(id) {
     if (confirm('Bạn có chắc muốn xóa nhân viên này?')) {
-        staffData = staffData.filter(s => s.id !== id);
+        staffData = staffData.filter(s => s.staff_id !== id);
         localStorage.setItem('staffData', JSON.stringify(staffData));
         renderStaffTable();
+        updateStats();
     }
 }
 
 function editStaff(id) {
     alert('Chức năng sửa đang được phát triển');
-}
-
-function importStaff() {
-    alert('Chức năng import đang được phát triển');
 }
 
 function exportStaff() {
@@ -357,5 +381,19 @@ function exportStaff() {
     a.href = url;
     a.download = 'staff_data.json';
     a.click();
-}</script>
+}
+
+// Load từ localStorage khi vào trang
+document.addEventListener('DOMContentLoaded', () => {
+    const stored = localStorage.getItem('staffData');
+    if (stored) {
+        staffData = JSON.parse(stored);
+        renderStaffTable();
+        updateStats();
+        document.getElementById('loadingMessage').style.display = 'none';
+        document.getElementById('tableContainer').style.display = 'block';
+        document.getElementById('statsSection').style.display = 'flex';
+    }
+});
+</script>
 {% endblock %}

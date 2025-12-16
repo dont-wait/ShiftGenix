@@ -1,0 +1,7 @@
+id,name,required_staff_per_shift,max_patient_load
+DEPT001,Pediatrics,2,100
+DEPT002,Surgery,2,80
+DEPT003,Emergency,3,150
+DEPT004,Cardiology,2,90
+DEPT005,Neurology,2,70
+DEPT006,Orthopedics,2,85

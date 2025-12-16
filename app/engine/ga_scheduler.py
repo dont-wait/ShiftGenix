@@ -17,7 +17,11 @@ class GeneticScheduler:
         self.config = config
         self.population: List[Individual] = []
         self.best_individual: Individual = None
-        self.fitness_evaluator = FitnessEvaluator(config.weights)
+        self.fitness_evaluator = FitnessEvaluator(
+            weights=config.weights,
+            min_hours_per_month=config.min_hours_per_month,
+            max_consecutive_shifts=config.max_consecutive_shifts
+        )
         
         # Lịch sử fitness qua các thế hệ
         self.fitness_history = []
@@ -29,7 +33,7 @@ class GeneticScheduler:
         for i in range(self.config.population_size):
             individual = Individual(
                 staff=self.config.staff,
-                positions=self.config.positions,
+                departments=self.config.departments,
                 shifts=self.config.shifts,
                 days=self.config.days
             )
@@ -52,49 +56,50 @@ class GeneticScheduler:
             self.best_individual = self.population[0].copy()
     
     def selection(self) -> List[Individual]:
-        """Roulette Wheel Selection"""
-        total_fitness = sum(ind.fitness_score for ind in self.population)
-        if total_fitness == 0:
-            # Nếu toàn bộ fitness = 0, chọn ngẫu nhiên
-            return random.choices(self.population, k=self.config.population_size // 2)
+        """Chọn lọc - Tournament Selection"""
+        tournament_size = 5
         selected = []
+        
+        # Chọn 50% số lượng tốt nhất để làm cha mẹ
         num_parents = self.config.population_size // 2
-        fitness_probs = [ind.fitness_score / total_fitness for ind in self.population]
+        
         for _ in range(num_parents):
-            r = random.random()
-            acc = 0.0
-            for ind, prob in zip(self.population, fitness_probs):
-                acc += prob
-                if acc >= r:
-                    selected.append(ind)
-                    break
+            # Chọn ngẫu nhiên tournament_size cá thể
+            tournament = random.sample(self.population, tournament_size)
+            # Chọn cá thể tốt nhất trong tournament
+            winner = max(tournament, key=lambda x: x.fitness_score)
+            selected.append(winner)
+        
         return selected
     
     def crossover(self, parent1: Individual, parent2: Individual) -> Tuple[Individual, Individual]:
-        """Uniform Crossover theo ngày"""
+        """Lai ghép - Single Point Crossover theo ngày"""
         if random.random() > self.config.crossover_rate:
             return parent1.copy(), parent2.copy()
+        
+        # Chọn điểm cắt ngẫu nhiên
+        crossover_point = random.randint(1, self.config.days - 1)
+        
+        # Tạo 2 con
         child1 = Individual(
             staff=self.config.staff,
-            positions=self.config.positions,
+            departments=self.config.departments,
             shifts=self.config.shifts,
             days=self.config.days
         )
         child2 = Individual(
             staff=self.config.staff,
-            positions=self.config.positions,
+            departments=self.config.departments,
             shifts=self.config.shifts,
             days=self.config.days
         )
-        child1.schedule = []
-        child2.schedule = []
-        for d in range(self.config.days):
-            if random.random() < 0.5:
-                child1.schedule.append(parent1.schedule[d])
-                child2.schedule.append(parent2.schedule[d])
-            else:
-                child1.schedule.append(parent2.schedule[d])
-                child2.schedule.append(parent1.schedule[d])
+        
+        # Child 1: Lấy crossover_point ngày đầu từ parent1, phần còn lại từ parent2
+        child1.schedule = parent1.schedule[:crossover_point] + parent2.schedule[crossover_point:]
+        
+        # Child 2: Ngược lại
+        child2.schedule = parent2.schedule[:crossover_point] + parent1.schedule[crossover_point:]
+        
         return child1, child2
     
     def mutate(self, individual: Individual):

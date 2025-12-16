@@ -1,11 +1,177 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h2>Genetic Algorithm Shift Scheduling</h2>
-<p>ShiftGenix is running 🚀</p>
+{% block title %}Trang chủ - {{ app_name }}{% endblock %}
 
-<ul>
-    <li><b>Web UI:</b> FastAPI + Jinja2</li>
-    <li><b>API:</b> /api/v1/schedule/generate</li>
-</ul>
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded-3 mb-4">
+            <h1 class="display-4">
+                <i class="bi bi-calendar-check text-primary"></i> ShiftGenix
+            </h1>
+            <p class="lead">Hệ thống xếp lịch trực thông minh cho bệnh viện</p>
+            <hr class="my-4">
+            <p>Sử dụng Thuật toán Di truyền (Genetic Algorithm) để tự động tạo lịch trực tối ưu cho nhân viên y tế.</p>
+            <a class="btn btn-primary btn-lg" href="/schedule" role="button">
+                <i class="bi bi-play-fill"></i> Bắt đầu xếp lịch
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Card 1: Quản lý Nhân viên -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">Quản lý Nhân viên</h5>
+                <p class="card-text">Quản lý thông tin bác sĩ, điều dưỡng: khoa, giờ làm, kinh nghiệm, mức độ hài lòng.</p>
+                <a href="/staff" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-right"></i> Quản lý
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Quản lý Khoa -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-hospital text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">Quản lý Khoa</h5>
+                <p class="card-text">Cấu hình các khoa: Nội, Ngoại, Nhi, Sản... Định nghĩa yêu cầu nhân lực cho mỗi khoa.</p>
+                <a href="/departments" class="btn btn-outline-success">
+                    <i class="bi bi-arrow-right"></i> Cấu hình
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Tạo lịch trực -->
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-calendar3 text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">Tạo lịch trực</h5>
+                <p class="card-text">Sử dụng AI để tự động tạo lịch trực tối ưu. Cân bằng khối lượng, tối ưu sự hài lòng.</p>
+                <a href="/schedule" class="btn btn-outline-warning">
+                    <i class="bi bi-arrow-right"></i> Tạo lịch
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">
+            <i class="bi bi-stars"></i> Tính năng nổi bật
+        </h2>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-shield-check"></i> Ràng buộc Cứng (Bắt buộc)
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success"></i> Số giờ làm tối thiểu/tháng</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Không làm quá N ca liên tiếp</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Đủ nhân viên mỗi ca</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-graph-up"></i> Ràng buộc Mềm (Tối ưu)
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-primary"></i> Cân bằng khối lượng công việc (40%)</li>
+                    <li><i class="bi bi-check-circle text-primary"></i> Tối ưu sự hài lòng (30%)</li>
+                    <li><i class="bi bi-check-circle text-primary"></i> Phân bổ kinh nghiệm (20%)</li>
+                    <li><i class="bi bi-check-circle text-primary"></i> Giảm làm thêm giờ (10%)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schema Info -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-database"></i> Cấu trúc dữ liệu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Thông tin Nhân viên</h6>
+                        <ul class="small">
+                            <li><strong>Staff ID:</strong> Mã nhân viên (S00001)</li>
+                            <li><strong>Department:</strong> Khoa (Pediatrics, Surgery...)</li>
+                            <li><strong>Role:</strong> Vai trò (Doctor, Nurse)</li>
+                            <li><strong>Shift Duration:</strong> Số giờ/ca (8, 10, 12h)</li>
+                            <li><strong>Patient Load:</strong> Số bệnh nhân/ca</li>
+                            <li><strong>Workdays:</strong> Số ngày làm/tháng</li>
+                            <li><strong>Experience:</strong> Số năm kinh nghiệm</li>
+                            <li><strong>Satisfaction:</strong> Điểm hài lòng</li>
+                            <li><strong>Overtime:</strong> Giờ làm thêm</li>
+                            <li><strong>Absenteeism:</strong> Ngày vắng mặt</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Thông tin Khoa</h6>
+                        <ul class="small">
+                            <li><strong>Department ID:</strong> Mã khoa (DEPT001)</li>
+                            <li><strong>Name:</strong> Tên khoa</li>
+                            <li><strong>Required Staff:</strong> Số nhân viên tối thiểu/ca</li>
+                            <li><strong>Max Patient Load:</strong> Tải bệnh nhân tối đa</li>
+                        </ul>
+                        
+                        <h6 class="text-warning mt-3">Ca làm việc</h6>
+                        <ul class="small">
+                            <li><strong>Morning:</strong> 07:00 - 15:00 (8h)</li>
+                            <li><strong>Afternoon:</strong> 15:00 - 23:00 (8h)</li>
+                            <li><strong>Night:</strong> 23:00 - 07:00 (8h)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <h5 class="alert-heading">
+                <i class="bi bi-info-circle"></i> Về hệ thống
+            </h5>
+            <p>ShiftGenix được phát triển dựa trên thuật toán Di truyền (Genetic Algorithm) để giải quyết bài toán NP-Hard về xếp lịch nhân viên.</p>
+            <hr>
+            <p class="mb-0">
+                <strong>Tính năng:</strong> Khởi tạo quần thể → Đánh giá fitness → Chọn lọc → Lai ghép → Đột biến → Tiến hóa
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}
